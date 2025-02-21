@@ -30,7 +30,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.11"
+          python-version: "3.12.9"
 
       - name: Install Dependencies
         run: |
@@ -43,10 +43,11 @@ jobs:
 
       - name: Run Tests
         env:
-          POSTGRES_DB: test
-          POSTGRES_USER: test
-          POSTGRES_PASSWORD: test
-          POSTGRES_HOST: localhost
+          DJANGO_SETTINGS_MODULE: task_management.settings
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
         run: pytest
 
   build-and-push:
@@ -69,22 +70,3 @@ jobs:
       - name: Push Docker Image
         run: |
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/task-management:latest
-
-  deploy:
-    name: Deploy to Server
-    runs-on: ubuntu-latest
-    needs: build-and-push
-    if: github.ref == 'refs/heads/main'
-
-    steps:
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@v0.1.6
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_KEY }}
-          script: |
-            cd /home/${{ secrets.SSH_USER }}/task-management
-            docker-compose down
-            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/task-management:latest
-            docker-compose up -d
