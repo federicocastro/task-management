@@ -9,6 +9,8 @@ services:
       POSTGRES_USER: test
       POSTGRES_PASSWORD: test
       POSTGRES_DB: test
+    networks:
+      - task-management
 
   web:
     build: .
@@ -21,6 +23,11 @@ services:
     volumes:
       - .:/app
     command: ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+    networks:
+      - task-management
 
 volumes:
   postgres_data:
+
+networks:
+  task-management:
