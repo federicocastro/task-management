@@ -21,14 +21,14 @@ jobs:
           POSTGRES_DB: task_management
         ports:
           - 5432:5432
-        options: >-
-          --health-cmd="pg_isready -U postgres"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
 
     env:
-      DATABASE_URL: postgres://postgres:postgres@localhost:5432/task_management
+      POSTGRES_DB: task_management
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/task_management
 
     steps:
       - name: Checkout code
@@ -44,6 +44,13 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+
+      - name: Verify PostgreSQL Connection
+        run: |
+          PGPASSWORD=$POSTGRES_PASSWORD psql -h $POSTGRES_HOST -U $POSTGRES_USER -d $POSTGRES_DB -c "SELECT 1;"
+
       - name: Run migrations
         run: |
           python manage.py migrate
@@ -51,7 +58,3 @@ jobs:
       - name: Run tests
         run: |
           python manage.py test
-
-      - name: Build Docker image
-        run: |
-          docker build -t task_management:latest .
