@@ -48,7 +48,7 @@ jobs:
           POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
           POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
-        run: pytest
+        run: python manage.py test
 
   build-and-push:
     name: Build and Push Docker Image
